@@ -1,0 +1,20 @@
+-- Seed data for Ajaia Docs
+-- Prerequisite: create auth users first (see README):
+--   owner@example.com / Password123!
+--   editor@example.com / Password123!
+--
+-- After signup, replace the UUID placeholders below with actual user IDs from
+-- Supabase Dashboard → Authentication → Users, or run scripts/seed-users.mjs
+
+-- Example documents (run after profiles exist):
+-- insert into public.documents (owner_id, title, content) values
+--   (
+--     '<OWNER_USER_ID>',
+--     'Welcome to Ajaia Docs',
+--     '<h1>Welcome</h1><p>This is a sample document for the hiring assessment.</p>'
+--   ),
+--   (
+--     '<OWNER_USER_ID>',
+--     'Team Notes',
+--     '<p>Share this document with <strong>editor@example.com</strong> to try collaboration.</p>'
+--   );
