@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { DeleteDialog } from "@/components/documents/delete-dialog";
@@ -35,10 +34,14 @@ function formatDate(iso: string) {
 type DocumentCardProps = {
   document: DocumentSummaryWithOwner;
   canManage: boolean;
+  onDeleted?: (documentId: string) => void;
 };
 
-export function DocumentCard({ document, canManage }: DocumentCardProps) {
-  const router = useRouter();
+export function DocumentCard({
+  document,
+  canManage,
+  onDeleted,
+}: DocumentCardProps) {
   const [title, setTitle] = useState(document.title);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -115,7 +118,7 @@ export function DocumentCard({ document, canManage }: DocumentCardProps) {
             title={title}
             open={deleteOpen}
             onOpenChange={setDeleteOpen}
-            onDeleted={() => router.refresh()}
+            onDeleted={() => onDeleted?.(document.id)}
           />
         </>
       ) : null}

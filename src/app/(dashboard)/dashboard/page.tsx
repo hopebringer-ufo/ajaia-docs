@@ -107,6 +107,12 @@ export default function DashboardPage() {
               myDocuments={myDocuments}
               sharedDocuments={sharedDocuments}
               currentUserId={userId}
+              onDocumentDeleted={(documentId) => {
+                setMyDocuments((docs) => docs.filter((d) => d.id !== documentId));
+                setSharedDocuments((docs) =>
+                  docs.filter((d) => d.id !== documentId),
+                );
+              }}
             />
           )}
         </main>

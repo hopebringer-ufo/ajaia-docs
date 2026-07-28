@@ -12,6 +12,7 @@ type DashboardViewProps = {
   myDocuments: DocumentSummaryWithOwner[];
   sharedDocuments: DocumentSummaryWithOwner[];
   currentUserId: string;
+  onDocumentDeleted?: (documentId: string) => void;
 };
 
 function filterDocs(docs: DocumentSummaryWithOwner[], query: string) {
@@ -28,6 +29,7 @@ export function DashboardView({
   myDocuments,
   sharedDocuments,
   currentUserId,
+  onDocumentDeleted,
 }: DashboardViewProps) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 250);
@@ -73,6 +75,7 @@ export function DashboardView({
         <DocumentList
           documents={filteredMine}
           currentUserId={currentUserId}
+          onDocumentDeleted={onDocumentDeleted}
           emptyTitle={searching ? "No matching documents" : "No documents yet"}
           emptyDescription={
             searching
@@ -93,6 +96,7 @@ export function DashboardView({
         <DocumentList
           documents={filteredShared}
           currentUserId={currentUserId}
+          onDocumentDeleted={onDocumentDeleted}
           emptyTitle={searching ? "No matching shared documents" : "Nothing shared yet"}
           emptyDescription={
             searching

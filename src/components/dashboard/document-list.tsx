@@ -10,6 +10,7 @@ type DocumentListProps = {
   currentUserId: string;
   emptyTitle: string;
   emptyDescription: string;
+  onDocumentDeleted?: (documentId: string) => void;
 };
 
 export function DocumentList({
@@ -17,6 +18,7 @@ export function DocumentList({
   currentUserId,
   emptyTitle,
   emptyDescription,
+  onDocumentDeleted,
 }: DocumentListProps) {
   if (documents.length === 0) {
     const isSearchEmpty = emptyTitle.toLowerCase().includes("matching");
@@ -42,6 +44,7 @@ export function DocumentList({
           <DocumentCard
             document={doc}
             canManage={doc.owner_id === currentUserId}
+            onDeleted={onDocumentDeleted}
           />
         </li>
       ))}
