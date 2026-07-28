@@ -4,9 +4,13 @@ import { Button } from "@/components/ui/button";
 
 type DashboardLoadErrorProps = {
   message: string;
+  showActions?: boolean;
 };
 
-export function DashboardLoadError({ message }: DashboardLoadErrorProps) {
+export function DashboardLoadError({
+  message,
+  showActions = true,
+}: DashboardLoadErrorProps) {
   const missingTables =
     /schema cache|does not exist|relation.*does not exist/i.test(message);
 
@@ -42,12 +46,14 @@ export function DashboardLoadError({ message }: DashboardLoadErrorProps) {
       <p className="max-w-lg rounded-lg border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
         {message}
       </p>
-      <div className="flex flex-wrap justify-center gap-2">
-        <Button render={<Link href="/dashboard" />}>Try again</Button>
-        <Button render={<Link href="/login" />} variant="outline">
-          Sign in again
-        </Button>
-      </div>
+      {showActions ? (
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button render={<Link href="/dashboard" />}>Try again</Button>
+          <Button render={<Link href="/login" />} variant="outline">
+            Sign in again
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }
