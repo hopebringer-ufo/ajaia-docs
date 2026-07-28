@@ -1,14 +1,21 @@
 #!/usr/bin/env node
 /**
  * Applies SQL migrations from supabase/migrations/ once per file.
- * Requires direct Postgres URL (not the Supabase REST URL).
  *
- * Netlify: set SUPABASE_DATABASE_URL in site environment variables.
- * Local: optional — skipped if unset.
+ * Netlify: set SUPABASE_DATABASE_URL to the Session pooler URI (IPv4).
+ * Direct db.*.supabase.co hosts often resolve to IPv6 only and fail on Netlify
+ * with ENETUNREACH.
+ *
+ * Local: skipped if SUPABASE_DATABASE_URL is unset.
  */
+import { setDefaultResultOrder, lookup } from "node:dns/promises";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { URL } from "node:url";
 import pg from "pg";
+
+// Prefer A (IPv4) records — Netlify build agents often cannot reach IPv6-only hosts.
+setDefaultResultOrder("ipv4first");
 
 const { Client } = pg;
 
@@ -21,6 +28,65 @@ function getDatabaseUrl() {
     process.env.DATABASE_URL?.trim() ||
     ""
   );
+}
+
+function isDirectSupabaseHost(hostname) {
+  return /^db\.[a-z0-9]+\.supabase\.co$/i.test(hostname);
+}
+
+function poolerHint() {
+  return (
+    "Use the Session pooler URI (IPv4), not Direct connection:\n" +
+    "  Supabase → Project Settings → Database → Connection string\n" +
+    "  Method: Session pooler → copy URI\n" +
+    "  Example: postgresql://postgres.PROJECTREF:PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres\n" +
+    "Set that value as SUPABASE_DATABASE_URL on Netlify, then redeploy.\n"
+  );
+}
+
+/**
+ * Resolve host to IPv4 and return a connection config that avoids IPv6-only routes.
+ */
+async function buildClientConfig(databaseUrl) {
+  const parsed = new URL(databaseUrl);
+  const hostname = parsed.hostname;
+
+  if (isDirectSupabaseHost(hostname)) {
+    process.stderr.write(
+      "Warning: SUPABASE_DATABASE_URL looks like a Direct connection (db.*.supabase.co).\n" +
+        "Netlify often cannot reach these hosts (IPv6 ENETUNREACH). Prefer Session pooler.\n",
+    );
+  }
+
+  let host = hostname;
+  try {
+    const { address, family } = await lookup(hostname, { family: 4 });
+    host = address;
+    process.stdout.write(
+      `Resolved ${hostname} → ${address} (IPv${family})\n`,
+    );
+  } catch {
+    process.stderr.write(
+      `Could not resolve IPv4 for ${hostname}. Trying default DNS (may fail on Netlify).\n`,
+    );
+  }
+
+  const port = parsed.port ? Number(parsed.port) : 5432;
+  const database = decodeURIComponent(
+    (parsed.pathname || "/postgres").replace(/^\//, "") || "postgres",
+  );
+  const user = decodeURIComponent(parsed.username);
+  const password = decodeURIComponent(parsed.password);
+
+  return {
+    host,
+    port,
+    database,
+    user,
+    password,
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 20_000,
+  };
 }
 
 async function ensureTrackingTable(client) {
@@ -47,8 +113,7 @@ async function main() {
     if (onNetlify) {
       process.stderr.write(
         "SUPABASE_DATABASE_URL is required on Netlify to run migrations.\n" +
-          "Supabase → Project Settings → Database → Connection string (URI).\n" +
-          "Use the Session pooler or Direct connection with the database password.\n",
+          poolerHint(),
       );
       process.exit(1);
     }
@@ -58,12 +123,24 @@ async function main() {
     return;
   }
 
-  const client = new Client({
-    connectionString: databaseUrl,
-    ssl: { rejectUnauthorized: false },
-  });
+  const config = await buildClientConfig(databaseUrl);
+  const client = new Client(config);
 
-  await client.connect();
+  try {
+    await client.connect();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(`Migration failed: ${message}\n`);
+    if (
+      /ENETUNREACH|ENOTFOUND|ETIMEDOUT|ECONNREFUSED|IPv6|getaddrinfo/i.test(
+        message,
+      )
+    ) {
+      process.stderr.write("\n" + poolerHint());
+    }
+    process.exit(1);
+  }
+
   process.stdout.write("Connected to database for migrations.\n");
 
   try {
@@ -113,5 +190,6 @@ main().catch((error) => {
   process.stderr.write(
     `Migration failed: ${error instanceof Error ? error.message : String(error)}\n`,
   );
+  process.stderr.write("\n" + poolerHint());
   process.exit(1);
 });

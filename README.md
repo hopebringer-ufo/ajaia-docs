@@ -121,9 +121,16 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key npm run seed:users
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://xxxx.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase publishable / anon key |
 | `NEXT_PUBLIC_SITE_URL` | `https://your-site.netlify.app` |
-| `SUPABASE_DATABASE_URL` | Postgres URI from Supabase → **Database** → **Connection string** (needed for auto-migrations on deploy) |
+| `SUPABASE_DATABASE_URL` | **Session pooler** Postgres URI (see below) |
 
-`SUPABASE_DATABASE_URL` is **server-only** (not `NEXT_PUBLIC_*`). Use the database password from the same screen. Migrations run once per file and are tracked in `_ajaia_schema_migrations`.
+`SUPABASE_DATABASE_URL` is **server-only** (not `NEXT_PUBLIC_*`). Migrations run once per file and are tracked in `_ajaia_schema_migrations`.
+
+**Important for Netlify:** use **Session pooler**, not Direct. Direct hosts (`db.*.supabase.co`) often resolve to IPv6 only and fail with `ENETUNREACH` on Netlify builds.
+
+1. Supabase → **Project Settings** → **Database** → **Connection string**
+2. Choose **Session pooler** (port `5432`, host like `….pooler.supabase.com`)
+3. Copy the URI and replace `[YOUR-PASSWORD]` with your database password
+4. Paste into Netlify as `SUPABASE_DATABASE_URL`
 
 Do **not** put `SUPABASE_SERVICE_ROLE_KEY` on Netlify unless you add a secure server-only feature that needs it.
 
