@@ -1,16 +1,55 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DocumentWithOwner } from "@/types";
+import type { DocumentWithOwner, Profile } from "@/types";
+
+type DocumentRow = {
+  id: string;
+  owner_id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+};
+
+function stubOwner(id: string): Pick<Profile, "id" | "email" | "full_name"> {
+  return { id, email: "", full_name: "Unknown" };
+}
+
+async function attachOwners(
+  documents: DocumentRow[],
+): Promise<DocumentWithOwner[]> {
+  if (documents.length === 0) {
+    return [];
+  }
+
+  const supabase = await createClient();
+  const ownerIds = [...new Set(documents.map((d) => d.owner_id))];
+  const { data: profiles, error } = await supabase
+    .from("profiles")
+    .select("id, email, full_name")
+    .in("id", ownerIds);
+
+  if (error) {
+    return documents.map((doc) => ({
+      ...doc,
+      owner: stubOwner(doc.owner_id),
+    }));
+  }
+
+  const byId = new Map(
+    (profiles ?? []).map((p) => [p.id, p as Pick<Profile, "id" | "email" | "full_name">]),
+  );
+
+  return documents.map((doc) => ({
+    ...doc,
+    owner: byId.get(doc.owner_id) ?? stubOwner(doc.owner_id),
+  }));
+}
 
 export async function getMyDocuments(userId: string): Promise<DocumentWithOwner[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("documents")
-    .select(
-      `
-      *,
-      owner:profiles!documents_owner_id_fkey (id, email, full_name)
-    `,
-    )
+    .select("id, owner_id, title, content, created_at, updated_at")
     .eq("owner_id", userId)
     .order("updated_at", { ascending: false });
 
@@ -18,7 +57,7 @@ export async function getMyDocuments(userId: string): Promise<DocumentWithOwner[
     throw new Error(error.message);
   }
 
-  return (data ?? []) as DocumentWithOwner[];
+  return attachOwners((data ?? []) as DocumentRow[]);
 }
 
 export async function getSharedDocuments(
@@ -41,12 +80,7 @@ export async function getSharedDocuments(
 
   const { data, error } = await supabase
     .from("documents")
-    .select(
-      `
-      *,
-      owner:profiles!documents_owner_id_fkey (id, email, full_name)
-    `,
-    )
+    .select("id, owner_id, title, content, created_at, updated_at")
     .in("id", ids)
     .order("updated_at", { ascending: false });
 
@@ -54,7 +88,7 @@ export async function getSharedDocuments(
     throw new Error(error.message);
   }
 
-  return (data ?? []) as DocumentWithOwner[];
+  return attachOwners((data ?? []) as DocumentRow[]);
 }
 
 export async function getDocumentById(
@@ -63,12 +97,7 @@ export async function getDocumentById(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("documents")
-    .select(
-      `
-      *,
-      owner:profiles!documents_owner_id_fkey (id, email, full_name)
-    `,
-    )
+    .select("id, owner_id, title, content, created_at, updated_at")
     .eq("id", documentId)
     .maybeSingle();
 
@@ -76,7 +105,12 @@ export async function getDocumentById(
     throw new Error(error.message);
   }
 
-  return (data as DocumentWithOwner | null) ?? null;
+  if (!data) {
+    return null;
+  }
+
+  const [withOwner] = await attachOwners([data as DocumentRow]);
+  return withOwner;
 }
 
 export async function userOwnsDocument(
