@@ -8,9 +8,9 @@ Candidate: Jeo Carretas (`vincenzo.tech25@gmail.com`)
 
 ## Walkthrough video URL
 
-See `VIDEO_URL.txt` in this folder (or paste your Loom/YouTube unlisted link below).
+https://drive.google.com/file/d/195Gq94NLrqx0Oi-pV7kZxQqO104bjTgD/view?usp=sharing
 
-`https://YOUR-VIDEO-LINK`
+(Also in `VIDEO_URL.txt`.)
 
 ## Reviewer credentials (sharing demo)
 
@@ -34,7 +34,7 @@ Demo flow for reviewers: sign in as `test@test.com` → create a document → Sh
 | Live deployment | Working (Netlify) |
 | README + architecture note + AI workflow note | Included |
 | Automated tests | Vitest (see `src/tests/`) |
-| Walkthrough video | Fill `VIDEO_URL.txt` |
+| Walkthrough video | Included (Google Drive) |
 
 ## Known limitations (intentional scope cuts)
 
