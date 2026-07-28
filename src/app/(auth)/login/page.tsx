@@ -31,7 +31,7 @@ export default function LoginPage() {
         </div>
         {process.env.NODE_ENV === "development" ? (
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            Dev demo: owner@example.com / Password123!
+            Dev demo: test@test.com / Password1
           </p>
         ) : null}
       </div>

@@ -5,14 +5,14 @@
  */
 const USERS = [
   {
-    email: "owner@example.com",
-    password: "Password123!",
-    full_name: "Document Owner",
+    email: "test@test.com",
+    password: "Password1",
+    full_name: "Test User",
   },
   {
-    email: "editor@example.com",
-    password: "Password123!",
-    full_name: "Shared Editor",
+    email: "owner@owner.com",
+    password: "Password1",
+    full_name: "Owner User",
   },
 ];
 

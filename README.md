@@ -55,20 +55,12 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 3. Under **Authentication → Providers**, enable Email and (for local demos) disable “Confirm email” or confirm users manually.
 4. Add the project URL and anon key to `.env.local` (see `.env.example`).
 
-### Demo users
+### Demo users (live site)
 
-| Email | Password |
-|--------|----------|
-| `owner@example.com` | `Password123!` |
-| `editor@example.com` | `Password123!` |
-
-Create them with the admin script (service role key required):
-
-```bash
-SUPABASE_SERVICE_ROLE_KEY=... node scripts/seed-users.mjs
-```
-
-Profiles are created automatically by the `on_auth_user_created` trigger. Optionally insert sample documents via `supabase/seed.sql` after replacing owner UUID placeholders.
+| Email | Password | Role |
+|--------|----------|------|
+| `test@test.com` | `Password1` | Document owner (create / share) |
+| `owner@owner.com` | `Password1` | Shared collaborator |
 
 ## Running locally
 
