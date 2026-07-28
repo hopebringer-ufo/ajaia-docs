@@ -12,7 +12,9 @@ export function DashboardLoadError({
   showActions = true,
 }: DashboardLoadErrorProps) {
   const missingTables =
-    /schema cache|does not exist|relation.*does not exist/i.test(message);
+    /schema cache|does not exist|relation.*does not exist|could not find the table/i.test(
+      message,
+    );
 
   const missingEnv = /NEXT_PUBLIC_SUPABASE/i.test(message);
 

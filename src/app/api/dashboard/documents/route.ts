@@ -15,13 +15,20 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let myDocuments;
-    let sharedDocuments;
     try {
-      [myDocuments, sharedDocuments] = await Promise.all([
+      const [myDocuments, sharedDocuments] = await Promise.all([
         getMyDocuments(user.id),
         getSharedDocuments(user.id),
       ]);
+
+      return NextResponse.json({
+        myDocuments,
+        sharedDocuments,
+        user: {
+          id: user.id,
+          email: user.email ?? "",
+        },
+      });
     } catch (loadError) {
       const message =
         loadError instanceof Error
@@ -29,12 +36,6 @@ export async function GET() {
           : "Failed to load documents.";
       return NextResponse.json({ error: message }, { status: 500 });
     }
-
-    return NextResponse.json({
-      myDocuments,
-      sharedDocuments,
-      userId: user.id,
-    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Dashboard API failed.";
