@@ -49,6 +49,37 @@ export async function createDocumentAction(
 
   try {
     const { supabase, user } = await requireUser();
+
+    const email = user.email ?? `${user.id}@unknown.local`;
+    const fullName =
+      (typeof user.user_metadata?.full_name === "string"
+        ? user.user_metadata.full_name
+        : null) ?? email.split("@")[0];
+
+    // Users who signed up before migrations may lack a profiles row.
+    await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        email,
+        full_name: fullName,
+      },
+      { onConflict: "id" },
+    );
+
+    const { data: rpcData, error: rpcError } = await supabase.rpc(
+      "create_document",
+      {
+        p_title: title?.trim() || "Untitled document",
+        p_content: html,
+      },
+    );
+
+    if (!rpcError && rpcData) {
+      revalidatePath("/dashboard");
+      return { success: true, data: rpcData as Document };
+    }
+
+    // Fallback if migration 003 is not applied yet
     const { data, error } = await supabase
       .from("documents")
       .insert({
@@ -60,7 +91,13 @@ export async function createDocumentAction(
       .single();
 
     if (error || !data) {
-      return { success: false, error: error?.message ?? "Failed to create document" };
+      return {
+        success: false,
+        error:
+          error?.message ??
+          rpcError?.message ??
+          "Failed to create document",
+      };
     }
 
     revalidatePath("/dashboard");

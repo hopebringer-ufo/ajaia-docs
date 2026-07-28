@@ -103,6 +103,10 @@ export interface Database {
     Functions: {
       user_can_access_document: { Args: { doc_id: string }; Returns: boolean };
       user_owns_document: { Args: { doc_id: string }; Returns: boolean };
+      create_document: {
+        Args: { p_title?: string; p_content?: string };
+        Returns: Database["public"]["Tables"]["documents"]["Row"];
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
