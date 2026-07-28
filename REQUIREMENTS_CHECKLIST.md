@@ -18,7 +18,7 @@ Status key: **Complete** | **Partial** | **N/A (submission artifact)**
 | Supabase Storage | N/A | Not required for MVP scope |
 | Tiptap | Complete | `document-editor.tsx` |
 | Vitest + RTL | Complete | `vitest.config.ts`, `src/tests/` (RTL setup + unit tests) |
-| Vercel deployment ready | Complete | `npm run build` passes; Netlify via `netlify.toml` |
+| Netlify deployment ready | Complete | `npm run build` + `netlify.toml` |
 
 ## Authentication
 

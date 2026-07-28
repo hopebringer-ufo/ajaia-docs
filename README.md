@@ -135,10 +135,6 @@ NEXT_PUBLIC_SUPABASE_URL=... NEXT_PUBLIC_SUPABASE_ANON_KEY=... npm run build
 npm run start
 ```
 
-## Deployment (Vercel)
-
-Same env vars as Netlify. Import the repo in Vercel, set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`, deploy.
-
 ## Folder structure
 
 ```
