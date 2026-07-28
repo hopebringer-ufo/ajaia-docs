@@ -114,7 +114,13 @@ export type Document = Database["public"]["Tables"]["documents"]["Row"];
 export type DocumentShare =
   Database["public"]["Tables"]["document_shares"]["Row"];
 
+export type DocumentSummary = Omit<Document, "content">;
+
 export type DocumentWithOwner = Document & {
+  owner: Pick<Profile, "id" | "email" | "full_name">;
+};
+
+export type DocumentSummaryWithOwner = DocumentSummary & {
   owner: Pick<Profile, "id" | "email" | "full_name">;
 };
 

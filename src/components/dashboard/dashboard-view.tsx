@@ -6,15 +6,15 @@ import { CreateDocumentButton } from "@/components/dashboard/create-document-but
 import { DocumentList } from "@/components/dashboard/document-list";
 import { SearchBox } from "@/components/dashboard/search-box";
 import { useDebouncedValue } from "@/hooks/use-debounce";
-import type { DocumentWithOwner } from "@/types";
+import type { DocumentSummaryWithOwner } from "@/types";
 
 type DashboardViewProps = {
-  myDocuments: DocumentWithOwner[];
-  sharedDocuments: DocumentWithOwner[];
+  myDocuments: DocumentSummaryWithOwner[];
+  sharedDocuments: DocumentSummaryWithOwner[];
   currentUserId: string;
 };
 
-function filterDocs(docs: DocumentWithOwner[], query: string) {
+function filterDocs(docs: DocumentSummaryWithOwner[], query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return docs;
   return docs.filter((d) => {

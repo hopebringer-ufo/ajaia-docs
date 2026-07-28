@@ -51,9 +51,9 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ## Supabase setup
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. In the SQL Editor, run `supabase/migrations/001_initial_schema.sql` then `002_document_update_guard.sql`.
+2. **Netlify:** set `SUPABASE_DATABASE_URL` so migrations run on each deploy (see Deployment). **Manual:** run `001_initial_schema.sql` and `002_document_update_guard.sql` in the SQL Editor.
 3. Under **Authentication → Providers**, enable Email and (for local demos) disable “Confirm email” or confirm users manually.
-4. Add the project URL and anon key to `.env.local`.
+4. Add the project URL and anon key to `.env.local` (see `.env.example`).
 
 ### Demo users
 
@@ -112,14 +112,18 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key npm run seed:users
 
 1. [Netlify](https://app.netlify.com) → **Add new site** → **Import from Git** → select this repo.
 2. Build settings (usually auto-detected from `netlify.toml`):
-   - Build command: `npm run build`
+   - Build command: `npm run build` (runs SQL migrations first, then `next build`)
    - Plugin: `@netlify/plugin-nextjs` (declared in `netlify.toml`)
 3. **Site configuration → Environment variables** (required):
 
 | Variable | Value |
 |----------|--------|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://xxxx.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase publishable / anon key |
+| `NEXT_PUBLIC_SITE_URL` | `https://your-site.netlify.app` |
+| `SUPABASE_DATABASE_URL` | Postgres URI from Supabase → **Database** → **Connection string** (needed for auto-migrations on deploy) |
+
+`SUPABASE_DATABASE_URL` is **server-only** (not `NEXT_PUBLIC_*`). Use the database password from the same screen. Migrations run once per file and are tracked in `_ajaia_schema_migrations`.
 
 Do **not** put `SUPABASE_SERVICE_ROLE_KEY` on Netlify unless you add a secure server-only feature that needs it.
 

@@ -3,10 +3,10 @@
 import { FileText, Search } from "lucide-react";
 
 import { DocumentCard } from "@/components/dashboard/document-card";
-import type { DocumentWithOwner } from "@/types";
+import type { DocumentSummaryWithOwner } from "@/types";
 
 type DocumentListProps = {
-  documents: DocumentWithOwner[];
+  documents: DocumentSummaryWithOwner[];
   currentUserId: string;
   emptyTitle: string;
   emptyDescription: string;

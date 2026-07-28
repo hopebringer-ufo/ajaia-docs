@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import type { DocumentWithOwner } from "@/types";
+import type { DocumentSummaryWithOwner } from "@/types";
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -33,7 +33,7 @@ function formatDate(iso: string) {
 }
 
 type DocumentCardProps = {
-  document: DocumentWithOwner;
+  document: DocumentSummaryWithOwner;
   canManage: boolean;
 };
 

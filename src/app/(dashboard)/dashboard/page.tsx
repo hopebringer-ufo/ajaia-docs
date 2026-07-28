@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getSessionUser } from "@/app/actions/auth";
+import { DashboardLoadError } from "@/components/dashboard/dashboard-load-error";
 import { DashboardView } from "@/components/dashboard/dashboard-view";
 import { Navbar } from "@/components/layout/navbar";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -12,15 +13,31 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const user = await getSessionUser();
+  let user;
+  try {
+    user = await getSessionUser();
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Could not read your session.";
+    return <DashboardLoadError message={message} />;
+  }
+
   if (!user) {
     redirect("/login");
   }
 
-  const [myDocuments, sharedDocuments] = await Promise.all([
-    getMyDocuments(user.id),
-    getSharedDocuments(user.id),
-  ]);
+  let myDocuments;
+  let sharedDocuments;
+  try {
+    [myDocuments, sharedDocuments] = await Promise.all([
+      getMyDocuments(user.id),
+      getSharedDocuments(user.id),
+    ]);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to load documents.";
+    return <DashboardLoadError message={message} />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-muted/30">

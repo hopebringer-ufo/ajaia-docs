@@ -1,11 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DocumentWithOwner, Profile } from "@/types";
+import type {
+  DocumentSummaryWithOwner,
+  DocumentWithOwner,
+  Profile,
+} from "@/types";
 
 type DocumentRow = {
   id: string;
   owner_id: string;
   title: string;
-  content: string;
   created_at: string;
   updated_at: string;
 };
@@ -16,7 +19,7 @@ function stubOwner(id: string): Pick<Profile, "id" | "email" | "full_name"> {
 
 async function attachOwners(
   documents: DocumentRow[],
-): Promise<DocumentWithOwner[]> {
+): Promise<DocumentSummaryWithOwner[]> {
   if (documents.length === 0) {
     return [];
   }
@@ -45,11 +48,13 @@ async function attachOwners(
   }));
 }
 
-export async function getMyDocuments(userId: string): Promise<DocumentWithOwner[]> {
+export async function getMyDocuments(
+  userId: string,
+): Promise<DocumentSummaryWithOwner[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("documents")
-    .select("id, owner_id, title, content, created_at, updated_at")
+    .select("id, owner_id, title, created_at, updated_at")
     .eq("owner_id", userId)
     .order("updated_at", { ascending: false });
 
@@ -62,7 +67,7 @@ export async function getMyDocuments(userId: string): Promise<DocumentWithOwner[
 
 export async function getSharedDocuments(
   userId: string,
-): Promise<DocumentWithOwner[]> {
+): Promise<DocumentSummaryWithOwner[]> {
   const supabase = await createClient();
   const { data: shares, error: shareError } = await supabase
     .from("document_shares")
@@ -80,7 +85,7 @@ export async function getSharedDocuments(
 
   const { data, error } = await supabase
     .from("documents")
-    .select("id, owner_id, title, content, created_at, updated_at")
+    .select("id, owner_id, title, created_at, updated_at")
     .in("id", ids)
     .order("updated_at", { ascending: false });
 
@@ -109,8 +114,17 @@ export async function getDocumentById(
     return null;
   }
 
-  const [withOwner] = await attachOwners([data as DocumentRow]);
-  return withOwner;
+  const row = data as DocumentRow & { content: string };
+  const [summary] = await attachOwners([
+    {
+      id: row.id,
+      owner_id: row.owner_id,
+      title: row.title,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    },
+  ]);
+  return { ...summary, content: row.content };
 }
 
 export async function userOwnsDocument(
